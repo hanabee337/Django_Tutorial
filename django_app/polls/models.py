@@ -20,8 +20,8 @@ class Question(models.Model):
 
 
 class Choice(models.Model):
-    question = models.ForeignKey(Question)
-    c_text = models.CharField(max_length=200)
+    question = models.ForeignKey(Question, verbose_name="Question Title")
+    c_text = models.CharField(max_length=200, verbose_name="Question Text")
     votes = models.IntegerField(default=0)
 
     def __str__(self):
