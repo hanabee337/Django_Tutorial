@@ -1,7 +1,7 @@
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 
-from .models import Question
+from .models import Question, Choice
 
 
 def index(request):
@@ -38,6 +38,7 @@ def index(request):
 def detail(request, question_id):
     # return HttpResponse("You're looking at question %s." % question_id)
     """
+    Q1)
     request.method== 'POST'일 때
     전달받은 데이터 출력
 
@@ -46,14 +47,27 @@ def detail(request, question_id):
     POST 형식으로 전달됐을 경우,
     전달받은 POST객체에서
     'choice' 키의 값을 HttpResponse로 되돌려준다
-    :param request:
-    :param question_id:
-    :return:
+
+    Q2)
+    1. 'choice'키로 전달된 Choice개객체의 id를 이용해서
+    2. 해당 Choice객체의 votes값을 1ㄴㄹ려주고 데이터베이스에 업데이트,
+    3. 완ㄹ되면 다시 Question detail 페이지로 이동
     """
     if request.method == 'POST':
-        print(request.POST)
-        value = request.POST['choice']
-        return HttpResponse(value)
+        #Q1)
+        # print(request.POST)
+        # value = request.POST['choice']
+        # return HttpResponse(value)
+
+        # Q2) id == pk(primary key)
+        choice_id = request.POST['choice']
+        choice = Choice.objects.get(id=choice_id)
+
+        choice.votes+=1
+        choice.save()
+
+        # return redirect('polls:detail', question_id=question_id)
+        return redirect('polls:results', question_id=question_id)
     else:
         question = Question.objects.get(id=question_id)
         context = {
@@ -61,9 +75,16 @@ def detail(request, question_id):
         }
         return render(request, 'polls/detail.html', context)
 
-def results(reques, question_id):
-    response = "You're looking at the results of question %s."
-    return HttpResponse(response % question_id)
+def results(request, question_id):
+    # response = "You're looking at the results of question %s."
+    # return HttpResponse(response % question_id)
+
+    # Q3) 인자로 주어진 question_id에 해당하는 Quesion객체를 context에 담아 render에 보낸다
+    question = Question.objects.get(id=question_id)
+    context = {
+        'question': question,
+    }
+    return render(request, 'polls/results.html', context)
 
 def vote(request, question_id):
     return HttpResponse("You're voting on question %s." % question_id)
