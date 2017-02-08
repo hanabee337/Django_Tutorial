@@ -37,11 +37,29 @@ def index(request):
 
 def detail(request, question_id):
     # return HttpResponse("You're looking at question %s." % question_id)
-    question = Question.objects.get(id=question_id)
-    context = {
-        'question': question,
-    }
-    return render(request, 'polls/detail.html', context)
+    """
+    request.method== 'POST'일 때
+    전달받은 데이터 출력
+
+    POST 형식이 아닐 경우, polls/detail.html을 render
+
+    POST 형식으로 전달됐을 경우,
+    전달받은 POST객체에서
+    'choice' 키의 값을 HttpResponse로 되돌려준다
+    :param request:
+    :param question_id:
+    :return:
+    """
+    if request.method == 'POST':
+        print(request.POST)
+        value = request.POST['choice']
+        return HttpResponse(value)
+    else:
+        question = Question.objects.get(id=question_id)
+        context = {
+            'question': question,
+        }
+        return render(request, 'polls/detail.html', context)
 
 def results(reques, question_id):
     response = "You're looking at the results of question %s."
