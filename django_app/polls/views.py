@@ -1,5 +1,5 @@
 from django.http import HttpResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 
 from .models import Question, Choice
 
@@ -52,6 +52,9 @@ def detail(request, question_id):
     1. 'choice'키로 전달된 Choice개객체의 id를 이용해서
     2. 해당 Choice객체의 votes값을 1ㄴㄹ려주고 데이터베이스에 업데이트,
     3. 완ㄹ되면 다시 Question detail 페이지로 이동
+
+    Q4) 선택하지 않은 채, vote한 경우, 에러 발생.
+        예외 처리 하기
     """
     if request.method == 'POST':
         #Q1)
@@ -60,14 +63,29 @@ def detail(request, question_id):
         # return HttpResponse(value)
 
         # Q2) id == pk(primary key)
-        choice_id = request.POST['choice']
-        choice = Choice.objects.get(id=choice_id)
+        if 'choice' in request.POST :
+            choice_id = request.POST['choice']
+            choice = Choice.objects.get(id=choice_id)
+            print(choice_id)
+            choice.votes+=1
+            choice.save()
 
-        choice.votes+=1
-        choice.save()
+            # return redirect('polls:detail', question_id=question_id)
 
-        # return redirect('polls:detail', question_id=question_id)
-        return redirect('polls:results', question_id=question_id)
+            # Q3)
+            return redirect('polls:results', question_id=question_id)
+
+        # Q4)
+        else:
+            question = Question.objects.get(id=question_id)
+            print(question_id)
+            error_case = get_object_or_404(Question, id=question_id)
+            context = {
+                'question': question,
+                'error_case': error_case,
+            }
+            return render(request, 'polls/detail.html', context)
+
     else:
         question = Question.objects.get(id=question_id)
         context = {
